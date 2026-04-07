@@ -52,7 +52,6 @@
       margin: 0;
     }
 
-    /* ヘッダー */
     .app-header {
       background-color: var(--surface-color);
       border-bottom: 1px solid var(--border-color);
@@ -92,14 +91,13 @@
       background-color: var(--button-bg);
     }
 
-    /* メインコンテンツ */
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 1rem;
     }
 
-    /* スポンサー枠 */
+    /* スポンサー枠（画像対応） */
     .sponsor {
       background: linear-gradient(135deg, rgba(255,159,74,0.1), rgba(0,0,0,0.05));
       border: 1px dashed var(--accent);
@@ -107,14 +105,25 @@
       padding: 1rem;
       text-align: center;
       margin: 1rem 0;
-      font-size: 0.9rem;
     }
-    .sponsor span {
-      font-weight: bold;
+    .sponsor a {
+      display: inline-block;
+      max-width: 100%;
+      text-decoration: none;
+    }
+    .sponsor img {
+      max-width: 100%;
+      max-height: 90px;
+      border-radius: 0.75rem;
+      object-fit: contain;
+    }
+    .sponsor-text {
+      display: block;
+      margin-top: 0.3rem;
+      font-size: 0.85rem;
       color: var(--accent);
     }
 
-    /* 地図 */
     .map-container {
       margin: 1.5rem 0;
       border-radius: 1.5rem;
@@ -128,7 +137,6 @@
       filter: var(--map-filter);
     }
 
-    /* 交通情報カード */
     .transport-card {
       background-color: var(--surface-color);
       border-radius: 1.5rem;
@@ -144,7 +152,6 @@
       gap: 0.5rem;
     }
 
-    /* リストグリッド */
     .grid-list {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -182,7 +189,6 @@
       color: var(--text-secondary);
     }
 
-    /* 詳細ページスタイル */
     .detail-container {
       background-color: var(--surface-color);
       border-radius: 1.5rem;
@@ -221,7 +227,6 @@
       margin-bottom: 1rem;
     }
 
-    /* フッター */
     .app-footer {
       background-color: var(--surface-color);
       border-top: 1px solid var(--border-color);
@@ -234,7 +239,6 @@
       text-decoration: none;
     }
 
-    /* レスポンシブ */
     @media (max-width: 640px) {
       .app-header {
         flex-direction: column;
@@ -249,7 +253,7 @@
 <body>
   <header class="app-header">
     <div class="logo">
-      <h1>🌴 Bali Virtual Guide</h1>
+      <h1 id="appTitle">🌴 Bali Virtual Guide</h1>
     </div>
     <div class="controls">
       <select id="languageSwitcher" class="lang-select">
@@ -261,9 +265,7 @@
     </div>
   </header>
 
-  <main class="container" id="appRoot">
-    <!-- 動的にコンテンツが挿入される -->
-  </main>
+  <main class="container" id="appRoot"></main>
 
   <footer class="app-footer">
     Contact us<br>
@@ -271,36 +273,51 @@
   </footer>
 
   <script>
-    // ------------------------------ 多言語データ ---------------------------------
+    // ======================== 簡単設定エリア ========================
+    // スポンサー (上部) の設定: 画像URL、リンク先URL、altテキスト（任意）
+    // 画像を使いたくない場合は imageUrl: null にするとテキスト表示にフォールバック
+    const sponsorTopConfig = {
+      imageUrl: null,   // 例: "https://example.com/sponsor-top.png"
+      linkUrl: "https://www.balitours.example.com?ref=bali_app",
+      altText: "Sponsor Bali Tour",
+      fallbackText: "✨ Sponsored — Book your Bali tour with discount code BALI10 ✨"
+    };
+
+    // スポンサー (下部) の設定
+    const sponsorBottomConfig = {
+      imageUrl: null,   // 例: "https://example.com/sponsor-bottom.png"
+      linkUrl: "https://www.balivillas.example.com",
+      altText: "Luxury Bali Villas",
+      fallbackText: "🌟 Sponsor: Luxury villas & excursions → Click here 🌟"
+    };
+    // ===============================================================
+
+    // 多言語データ (タイトル＋スポンサー文言フォールバック用)
     const translations = {
       en: {
+        appTitle: "🌴 Bali Virtual Guide",
         transportTitle: "🚗 Getting Around Bali",
         transportText: "Use Grab / Gojek (ride-hailing apps) for cars or scooters. Blue Bird taxis are reliable. For long day trips, charter a private driver. No trains, but Kura-Kura bus covers some tourist areas.",
-        sponsorTop: "✨ Sponsored — Book your Bali tour with discount code BALI10 ✨",
-        sponsorBottom: "🌟 Sponsor: Luxury villas & excursions → Click here 🌟",
         backBtn: "← Back to main list",
         officialWebsite: "Official Website",
-        // カテゴリ・アイテムタイトルなどはデータと一緒に管理
       },
       ja: {
+        appTitle: "🌴 バリ仮想ガイド",
         transportTitle: "🚗 バリ島の移動手段",
         transportText: "Grab / Gojek（配車アプリ）で車やバイクタクシーを呼べます。ブルーバードタクシーは信頼できる正規タクシー。日帰り観光はチャーターが便利。鉄道はありませんが、クラクラバスが一部エリアをカバー。",
-        sponsorTop: "✨ スポンサー — バリツアーを割引コード BALI10 で予約 ✨",
-        sponsorBottom: "🌟 スポンサー：高級ヴィラ＆アクティビティ → 詳細はこちら 🌟",
         backBtn: "← メインページに戻る",
         officialWebsite: "公式サイト",
       },
       id: {
+        appTitle: "🌴 Panduan Virtual Bali",
         transportTitle: "🚗 Transportasi di Bali",
         transportText: "Gunakan Grab / Gojek untuk mobil atau ojek. Taksi Blue Bird terpercaya. Untuk perjalanan sewa mobil dengan sopir. Tidak ada kereta, tapi ada bus Kura-Kura di beberapa area wisata.",
-        sponsorTop: "✨ Sponsor — Pesan tur Bali dengan kode diskon BALI10 ✨",
-        sponsorBottom: "🌟 Sponsor: Vila mewah & ekskursi → Klik di sini 🌟",
         backBtn: "← Kembali ke daftar utama",
         officialWebsite: "Situs Resmi",
       }
     };
 
-    // 観光データ (12個 + 詳細情報)
+    // 観光データ (12個)
     const placesData = [
       { id: "ubud", category: "place", title_en: "Ubud", title_ja: "ウブド", title_id: "Ubud", desc_en: "Cultural heart of Bali with art markets, royal palace and lush jungles.", desc_ja: "バリの文化芸術の中心地。アートマーケットや王宮、緑豊かなジャングル。", desc_id: "Jantung budaya Bali dengan pasar seni, istana kerajaan dan hutan lebat.", img: "https://picsum.photos/id/104/400/300", official: "https://www.ubud.id/" },
       { id: "tanahlot", category: "place", title_en: "Tanah Lot Temple", title_ja: "タナロット寺院", title_id: "Pura Tanah Lot", desc_en: "Iconic sea temple with stunning sunset views.", desc_ja: "海中に立つ絶景寺院。夕日が特に美しい。", desc_id: "Kuil laut ikonik dengan pemandangan matahari terbenam.", img: "https://picsum.photos/id/15/400/300", official: "https://www.tanahlot.net/" },
@@ -316,49 +333,57 @@
       { id: "sate", category: "food", title_en: "Sate", title_ja: "サテ", title_id: "Sate", desc_en: "Chicken satay with peanut sauce.", desc_ja: "ピーナッツソースの鶏串焼き。", desc_id: "Sate ayam dengan saus kacang.", img: "https://picsum.photos/id/126/400/300", official: "https://www.balifoods.com/sate" }
     ];
 
-    let currentLang = "en";   // en, ja, id
-    let currentTheme = "dark"; // dark, light
-    let currentView = "home";  // home or detail
+    let currentLang = "en";
+    let currentTheme = "dark";
+    let currentView = "home";
     let selectedItemId = null;
 
-    // テーマ適用
     function applyTheme() {
-      if (currentTheme === "light") {
-        document.body.classList.add("light");
-      } else {
-        document.body.classList.remove("light");
-      }
+      if (currentTheme === "light") document.body.classList.add("light");
+      else document.body.classList.remove("light");
     }
 
-    // テーマ切替
     function toggleTheme() {
       currentTheme = currentTheme === "dark" ? "light" : "dark";
       localStorage.setItem("bali_theme", currentTheme);
       applyTheme();
     }
 
-    // 言語を切り替え & 再描画
     function setLanguage(lang) {
       currentLang = lang;
       localStorage.setItem("bali_lang", lang);
+      document.getElementById("appTitle").innerText = translations[currentLang].appTitle;
       renderCurrentView();
     }
 
-    // タイトル取得 (言語別)
     function getTitle(item) {
       if (currentLang === "ja") return item.title_ja;
       if (currentLang === "id") return item.title_id;
       return item.title_en;
     }
 
-    // 説明取得 (詳細用)
     function getDescription(item) {
       if (currentLang === "ja") return item.desc_ja;
       if (currentLang === "id") return item.desc_id;
       return item.desc_en;
     }
 
-    // ホーム画面のレンダリング (リスト＋地図＋交通＋スポンサー)
+    // スポンサーHTML生成（画像優先、なければフォールバックテキスト）
+    function renderSponsor(config, lang) {
+      if (config.imageUrl && config.imageUrl.trim() !== "") {
+        return `
+          <a href="${config.linkUrl}" target="_blank" rel="noopener noreferrer">
+            <img src="${config.imageUrl}" alt="${config.altText}" loading="lazy">
+            <span class="sponsor-text">${config.altText}</span>
+          </a>
+        `;
+      } else {
+        // フォールバックテキストは多言語対応しない（簡易のため固定文言を使うが、configに指定があればそれを使う）
+        const fallback = config.fallbackText || (lang === "ja" ? "スポンサー" : "Sponsor");
+        return `<span>${fallback}</span>`;
+      }
+    }
+
     function renderHome() {
       const t = translations[currentLang];
       const categories = [
@@ -369,11 +394,7 @@
 
       let categoryHtml = "";
       for (let cat of categories) {
-        let catName = "";
-        if (currentLang === "ja") catName = cat.name_ja;
-        else if (currentLang === "id") catName = cat.name_id;
-        else catName = cat.name_en;
-        
+        let catName = (currentLang === "ja") ? cat.name_ja : (currentLang === "id" ? cat.name_id : cat.name_en);
         const items = placesData.filter(p => p.category === cat.type);
         let cardsHtml = "";
         items.forEach(item => {
@@ -387,12 +408,7 @@
             </div>
           `;
         });
-        categoryHtml += `
-          <h2 style="margin: 1.5rem 0 0.5rem 0;">📍 ${catName}</h2>
-          <div class="grid-list">
-            ${cardsHtml}
-          </div>
-        `;
+        categoryHtml += `<h2 style="margin: 1.5rem 0 0.5rem 0;">📍 ${catName}</h2><div class="grid-list">${cardsHtml}</div>`;
       }
 
       const transportHtml = `
@@ -409,24 +425,19 @@
       `;
 
       const fullHtml = `
-        <div class="sponsor">✨ <span>${t.sponsorTop}</span> ✨</div>
+        <div class="sponsor">${renderSponsor(sponsorTopConfig, currentLang)}</div>
         ${mapHtml}
         ${transportHtml}
         ${categoryHtml}
-        <div class="sponsor">🌟 <span>${t.sponsorBottom}</span> 🌟</div>
+        <div class="sponsor">${renderSponsor(sponsorBottomConfig, currentLang)}</div>
       `;
       document.getElementById("appRoot").innerHTML = fullHtml;
 
-      // カードクリックイベント
       document.querySelectorAll(".card").forEach(card => {
-        card.addEventListener("click", (e) => {
-          const id = card.getAttribute("data-id");
-          showDetail(id);
-        });
+        card.addEventListener("click", () => showDetail(card.getAttribute("data-id")));
       });
     }
 
-    // 詳細ページ表示
     function showDetail(id) {
       const item = placesData.find(p => p.id === id);
       if (!item) return;
@@ -451,20 +462,12 @@
       window.history.pushState({ view: "detail", id: id }, "", `#detail-${id}`);
     }
 
-    // 現在のビューを再描画 (言語/テーマ切替後)
     function renderCurrentView() {
-      if (currentView === "home") {
-        renderHome();
-      } else if (currentView === "detail" && selectedItemId) {
-        showDetail(selectedItemId);
-      } else {
-        // フォールバック
-        currentView = "home";
-        renderHome();
-      }
+      if (currentView === "home") renderHome();
+      else if (currentView === "detail" && selectedItemId) showDetail(selectedItemId);
+      else renderHome();
     }
 
-    // ブラウザバック/フォワード対応
     window.addEventListener("popstate", (event) => {
       if (event.state && event.state.view === "detail") {
         currentView = "detail";
@@ -476,7 +479,6 @@
       }
     });
 
-    // 初期化 & ローカル設定読み込み
     function init() {
       const savedTheme = localStorage.getItem("bali_theme");
       if (savedTheme === "light") currentTheme = "light";
@@ -484,21 +486,16 @@
       applyTheme();
 
       const savedLang = localStorage.getItem("bali_lang");
-      if (savedLang && (savedLang === "en" || savedLang === "ja" || savedLang === "id")) {
-        currentLang = savedLang;
-      } else {
-        currentLang = "en";
-      }
+      if (savedLang && ["en","ja","id"].includes(savedLang)) currentLang = savedLang;
+      else currentLang = "en";
       document.getElementById("languageSwitcher").value = currentLang;
+      document.getElementById("appTitle").innerText = translations[currentLang].appTitle;
+
       document.getElementById("themeToggle").addEventListener("click", toggleTheme);
-      document.getElementById("languageSwitcher").addEventListener("change", (e) => {
-        setLanguage(e.target.value);
-        document.getElementById("languageSwitcher").value = currentLang;
-      });
+      document.getElementById("languageSwitcher").addEventListener("change", (e) => setLanguage(e.target.value));
 
       currentView = "home";
       renderHome();
-      // 初期history state
       window.history.replaceState({ view: "home" }, "", "#home");
     }
 
