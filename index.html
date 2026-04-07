@@ -370,20 +370,25 @@
 
     // スポンサーHTML生成（画像優先、なければフォールバックテキスト）
     function renderSponsor(config, lang) {
-      if (config.imageUrl && config.imageUrl.trim() !== "") {
-        return `
-          <a href="${config.linkUrl}" target="_blank" rel="noopener noreferrer">
-            <img src="${config.imageUrl}" alt="${config.altText}" loading="lazy">
-            <span class="sponsor-text">${config.altText}</span>
-          </a>
-        `;
-      } else {
-        // フォールバックテキストは多言語対応しない（簡易のため固定文言を使うが、configに指定があればそれを使う）
-        const fallback = config.fallbackText || (lang === "ja" ? "スポンサー" : "Sponsor");
-        return `<span>${fallback}</span>`;
-      }
-    }
+  // リンクの中に表示する内容を生成
+  let innerContent = "";
+  if (config.imageUrl && config.imageUrl.trim() !== "") {
+    innerContent = `
+      <img src="${config.imageUrl}" alt="${config.altText}" loading="lazy">
+      <span class="sponsor-text">${config.altText}</span>
+    `;
+  } else {
+    const fallback = config.fallbackText || (lang === "ja" ? "スポンサー" : "Sponsor");
+    innerContent = `<span class="sponsor-text">${fallback}</span>`;
+  }
 
+  // linkUrl があればリンクとして表示、なければ単なるテキスト
+  if (config.linkUrl && config.linkUrl.trim() !== "") {
+    return `<a href="${config.linkUrl}" target="_blank" rel="noopener noreferrer">${innerContent}</a>`;
+  } else {
+    return `<div class="sponsor-text">${innerContent}</div>`;
+  }
+}
     function renderHome() {
       const t = translations[currentLang];
       const categories = [
