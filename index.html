@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Bali Virtual Guide</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1a1a">
+  <link rel="apple-touch-icon" href="icons/icon-192.jpg">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    /* ダークモード（デフォルト） */
+    :root {
+      --bg-color: #121212;
+      --surface-color: #1e1e1e;
+      --text-color: #e0e0e0;
+      --text-secondary: #aaaaaa;
+      --border-color: #333333;
+      --card-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      --button-bg: #2c2c2c;
+      --button-hover: #3a3a3a;
+      --accent: #ff9f4a;
+      --map-filter: brightness(0.8);
+    }
+
+    /* ライトモード */
+    body.light {
+      --bg-color: #f5f5f7;
+      --surface-color: #ffffff;
+      --text-color: #1e1e1e;
+      --text-secondary: #555555;
+      --border-color: #dddddd;
+      --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      --button-bg: #eaeaea;
+      --button-hover: #d4d4d4;
+      --accent: #e67e22;
+      --map-filter: brightness(1);
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* ヘッダー */
+    .app-header {
+      background-color: var(--surface-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .logo h1 {
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, var(--accent), #ffb347);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .controls {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    button, .lang-select {
+      background-color: var(--button-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 0.4rem 0.8rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    button:hover, .lang-select:hover {
+      background-color: var(--button-hover);
+    }
+    .lang-select {
+      background-color: var(--button-bg);
+    }
+
+    /* メインコンテンツ */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    /* スポンサー枠 */
+    .sponsor {
+      background: linear-gradient(135deg, rgba(255,159,74,0.1), rgba(0,0,0,0.05));
+      border: 1px dashed var(--accent);
+      border-radius: 1rem;
+      padding: 1rem;
+      text-align: center;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .sponsor span {
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    /* 地図 */
+    .map-container {
+      margin: 1.5rem 0;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+    }
+    .map-container iframe {
+      width: 100%;
+      height: 350px;
+      border: 0;
+      filter: var(--map-filter);
+    }
+
+    /* 交通情報カード */
+    .transport-card {
+      background-color: var(--surface-color);
+      border-radius: 1.5rem;
+      padding: 1.2rem;
+      margin: 1.5rem 0;
+      box-shadow: var(--card-shadow);
+      border-left: 4px solid var(--accent);
+    }
+    .transport-card h3 {
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* リストグリッド */
+    .grid-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 1rem 0;
+    }
+    .card {
+      background-color: var(--surface-color);
+      border-radius: 1.5rem;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.2);
+    }
+    .card-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+    }
+    .card-content {
+      padding: 1rem;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    /* 詳細ページスタイル */
+    .detail-container {
+      background-color: var(--surface-color);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      box-shadow: var(--card-shadow);
+    }
+    .detail-img {
+      width: 100%;
+      max-height: 400px;
+      object-fit: cover;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+    }
+    .detail-title {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .detail-desc {
+      margin: 1rem 0;
+      line-height: 1.6;
+    }
+    .official-link {
+      display: inline-block;
+      margin-top: 1rem;
+      background-color: var(--accent);
+      color: #121212;
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .back-button {
+      background-color: var(--button-bg);
+      border: none;
+      margin-bottom: 1rem;
+    }
+
+    /* フッター */
+    .app-footer {
+      background-color: var(--surface-color);
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    .app-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 640px) {
+      .app-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="logo">
+      <h1>🌴 Bali Virtual Guide</h1>
+    </div>
+    <div class="controls">
+      <select id="languageSwitcher" class="lang-select">
+        <option value="en">🇬🇧 English</option>
+        <option value="ja">🇯🇵 日本語</option>
+        <option value="id">🇮🇩 Bahasa Indonesia</option>
+      </select>
+      <button id="themeToggle">🌓 ダーク/ライト</button>
+    </div>
+  </header>
+
+  <main class="container" id="appRoot">
+    <!-- 動的にコンテンツが挿入される -->
+  </main>
+
+  <footer class="app-footer">
+    Contact us<br>
+    <a href="mailto:mementomorikatsu@gmail.com">mementomorikatsu@gmail.com</a>
+  </footer>
+
+  <script>
+    // ------------------------------ 多言語データ ---------------------------------
+    const translations = {
+      en: {
+        transportTitle: "🚗 Getting Around Bali",
+        transportText: "Use Grab / Gojek (ride-hailing apps) for cars or scooters. Blue Bird taxis are reliable. For long day trips, charter a private driver. No trains, but Kura-Kura bus covers some tourist areas.",
+        sponsorTop: "✨ Sponsored — Book your Bali tour with discount code BALI10 ✨",
+        sponsorBottom: "🌟 Sponsor: Luxury villas & excursions → Click here 🌟",
+        backBtn: "← Back to main list",
+        officialWebsite: "Official Website",
+        // カテゴリ・アイテムタイトルなどはデータと一緒に管理
+      },
+      ja: {
+        transportTitle: "🚗 バリ島の移動手段",
+        transportText: "Grab / Gojek（配車アプリ）で車やバイクタクシーを呼べます。ブルーバードタクシーは信頼できる正規タクシー。日帰り観光はチャーターが便利。鉄道はありませんが、クラクラバスが一部エリアをカバー。",
+        sponsorTop: "✨ スポンサー — バリツアーを割引コード BALI10 で予約 ✨",
+        sponsorBottom: "🌟 スポンサー：高級ヴィラ＆アクティビティ → 詳細はこちら 🌟",
+        backBtn: "← メインページに戻る",
+        officialWebsite: "公式サイト",
+      },
+      id: {
+        transportTitle: "🚗 Transportasi di Bali",
+        transportText: "Gunakan Grab / Gojek untuk mobil atau ojek. Taksi Blue Bird terpercaya. Untuk perjalanan sewa mobil dengan sopir. Tidak ada kereta, tapi ada bus Kura-Kura di beberapa area wisata.",
+        sponsorTop: "✨ Sponsor — Pesan tur Bali dengan kode diskon BALI10 ✨",
+        sponsorBottom: "🌟 Sponsor: Vila mewah & ekskursi → Klik di sini 🌟",
+        backBtn: "← Kembali ke daftar utama",
+        officialWebsite: "Situs Resmi",
+      }
+    };
+
+    // 観光データ (12個 + 詳細情報)
+    const placesData = [
+      { id: "ubud", category: "place", title_en: "Ubud", title_ja: "ウブド", title_id: "Ubud", desc_en: "Cultural heart of Bali with art markets, royal palace and lush jungles.", desc_ja: "バリの文化芸術の中心地。アートマーケットや王宮、緑豊かなジャングル。", desc_id: "Jantung budaya Bali dengan pasar seni, istana kerajaan dan hutan lebat.", img: "https://picsum.photos/id/104/400/300", official: "https://www.ubud.id/" },
+      { id: "tanahlot", category: "place", title_en: "Tanah Lot Temple", title_ja: "タナロット寺院", title_id: "Pura Tanah Lot", desc_en: "Iconic sea temple with stunning sunset views.", desc_ja: "海中に立つ絶景寺院。夕日が特に美しい。", desc_id: "Kuil laut ikonik dengan pemandangan matahari terbenam.", img: "https://picsum.photos/id/15/400/300", official: "https://www.tanahlot.net/" },
+      { id: "tegalalang", category: "place", title_en: "Tegallalang Rice Terraces", title_ja: "テガララン棚田", title_id: "Sawah Terasering Tegallalang", desc_en: "Famous green rice terraces perfect for photography.", desc_ja: "美しい棚田。フォトスポットとして人気。", desc_id: "Sawah hijau terkenal, sempurna untuk foto.", img: "https://picsum.photos/id/30/400/300", official: "https://www.tegallalang.com/" },
+      { id: "sanur", category: "place", title_en: "Sanur Beach", title_ja: "サヌールビーチ", title_id: "Pantai Sanur", desc_en: "Calm beach with sunrise views and relaxed vibe.", desc_ja: "穏やかな海岸線。日の出とリラックスした雰囲気。", desc_id: "Pantai tenang dengan pemandangan matahari terbit.", img: "https://picsum.photos/id/96/400/300", official: "https://www.balitourismboard.org/sanur_beach.html" },
+      { id: "rafting", category: "activity", title_en: "White Water Rafting", title_ja: "ラフティング", title_id: "Arung Jeram", desc_en: "Exciting rafting through jungle rivers.", desc_ja: "ジャングルの中の川でのスリル満点のラフティング。", desc_id: "Arung jeram seru melalui sungai di hutan.", img: "https://picsum.photos/id/29/400/300", official: "https://www.balirafting.com/" },
+      { id: "monkeyforest", category: "activity", title_en: "Ubud Monkey Forest", title_ja: "ウブド モンキーフォレスト", title_id: "Hutan Monyet Ubud", desc_en: "Sacred forest with playful long-tailed macaques.", desc_ja: "多くのカニクイザルが生息する聖なる森。", desc_id: "Hutan suci dengan monyet ekor panjang yang lucu.", img: "https://picsum.photos/id/205/400/300", official: "https://www.monkeyforestubud.com/" },
+      { id: "nusapenida", category: "activity", title_en: "Nusa Penida Tour", title_ja: "ペニダ島ツアー", title_id: "Tur Nusa Penida", desc_en: "Stunning cliffs and beaches like Kelingking.", desc_ja: "ケリンキングビーチなど絶景の離島。", desc_id: "Tebing dan pantai menakjubkan seperti Kelingking.", img: "https://picsum.photos/id/76/400/300", official: "https://www.nusapenida.id/" },
+      { id: "spa", category: "activity", title_en: "Traditional Balinese Spa", title_ja: "バリニーズスパ", title_id: "Spa Tradisional Bali", desc_en: "Relax with flower bath and massage.", desc_ja: "フラワーバスやマッサージで癒しの体験。", desc_id: "Relaksasi dengan mandi bunga dan pijat.", img: "https://picsum.photos/id/133/400/300", official: "https://www.balispas.com/" },
+      { id: "babiguling", category: "food", title_en: "Babi Guling", title_ja: "バビグリン", title_id: "Babi Guling", desc_en: "Suckling pig roasted with spices, Bali's signature dish.", desc_ja: "皮がパリッとした豚の丸焼き。バリの名物料理。", desc_id: "Babi panggang dengan rempah, hidangan khas Bali.", img: "https://picsum.photos/id/127/400/300", official: "https://www.balifoods.com/babi-guling" },
+      { id: "nasigoreng", category: "food", title_en: "Nasi Goreng", title_ja: "ナシゴレン", title_id: "Nasi Goreng", desc_en: "Fried rice with sweet soy and spices.", desc_ja: "甘辛いソースのチャーハン。", desc_id: "Nasi goreng dengan kecap manis.", img: "https://picsum.photos/id/124/400/300", official: "https://www.indonesiaeats.com/nasi-goreng/" },
+      { id: "miegoreng", category: "food", title_en: "Mie Goreng", title_ja: "ミーゴレン", title_id: "Mie Goreng", desc_en: "Stir-fried noodles with spicy flavor.", desc_ja: "ピリ辛炒め麺。", desc_id: "Mie goreng pedas.", img: "https://picsum.photos/id/119/400/300", official: "https://www.indonesiaeats.com/mie-goreng/" },
+      { id: "sate", category: "food", title_en: "Sate", title_ja: "サテ", title_id: "Sate", desc_en: "Chicken satay with peanut sauce.", desc_ja: "ピーナッツソースの鶏串焼き。", desc_id: "Sate ayam dengan saus kacang.", img: "https://picsum.photos/id/126/400/300", official: "https://www.balifoods.com/sate" }
+    ];
+
+    let currentLang = "en";   // en, ja, id
+    let currentTheme = "dark"; // dark, light
+    let currentView = "home";  // home or detail
+    let selectedItemId = null;
+
+    // テーマ適用
+    function applyTheme() {
+      if (currentTheme === "light") {
+        document.body.classList.add("light");
+      } else {
+        document.body.classList.remove("light");
+      }
+    }
+
+    // テーマ切替
+    function toggleTheme() {
+      currentTheme = currentTheme === "dark" ? "light" : "dark";
+      localStorage.setItem("bali_theme", currentTheme);
+      applyTheme();
+    }
+
+    // 言語を切り替え & 再描画
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem("bali_lang", lang);
+      renderCurrentView();
+    }
+
+    // タイトル取得 (言語別)
+    function getTitle(item) {
+      if (currentLang === "ja") return item.title_ja;
+      if (currentLang === "id") return item.title_id;
+      return item.title_en;
+    }
+
+    // 説明取得 (詳細用)
+    function getDescription(item) {
+      if (currentLang === "ja") return item.desc_ja;
+      if (currentLang === "id") return item.desc_id;
+      return item.desc_en;
+    }
+
+    // ホーム画面のレンダリング (リスト＋地図＋交通＋スポンサー)
+    function renderHome() {
+      const t = translations[currentLang];
+      const categories = [
+        { name_en: "Places to Visit", name_ja: "行く所", name_id: "Tempat Wisata", type: "place" },
+        { name_en: "Things to Do", name_ja: "やる事", name_id: "Aktivitas", type: "activity" },
+        { name_en: "Food to Eat", name_ja: "食べるもの", name_id: "Makanan", type: "food" }
+      ];
+
+      let categoryHtml = "";
+      for (let cat of categories) {
+        let catName = "";
+        if (currentLang === "ja") catName = cat.name_ja;
+        else if (currentLang === "id") catName = cat.name_id;
+        else catName = cat.name_en;
+        
+        const items = placesData.filter(p => p.category === cat.type);
+        let cardsHtml = "";
+        items.forEach(item => {
+          cardsHtml += `
+            <div class="card" data-id="${item.id}">
+              <img class="card-img" src="${item.img}" alt="${getTitle(item)}" loading="lazy">
+              <div class="card-content">
+                <div class="card-title">${getTitle(item)}</div>
+                <div class="card-desc">${getDescription(item).substring(0, 60)}...</div>
+              </div>
+            </div>
+          `;
+        });
+        categoryHtml += `
+          <h2 style="margin: 1.5rem 0 0.5rem 0;">📍 ${catName}</h2>
+          <div class="grid-list">
+            ${cardsHtml}
+          </div>
+        `;
+      }
+
+      const transportHtml = `
+        <div class="transport-card">
+          <h3>${t.transportTitle}</h3>
+          <p>${t.transportText}</p>
+        </div>
+      `;
+
+      const mapHtml = `
+        <div class="map-container">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126173.53979083974!2d115.194984905443!3d-8.506944!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd23d5b0e4f0f2f%3A0x7a3e2f8a8f2b3a4!2sUbud%2C%20Bali!5e0!3m2!1sen!2sid!4v1710000000000!5m2!1sen!2sid" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+      `;
+
+      const fullHtml = `
+        <div class="sponsor">✨ <span>${t.sponsorTop}</span> ✨</div>
+        ${mapHtml}
+        ${transportHtml}
+        ${categoryHtml}
+        <div class="sponsor">🌟 <span>${t.sponsorBottom}</span> 🌟</div>
+      `;
+      document.getElementById("appRoot").innerHTML = fullHtml;
+
+      // カードクリックイベント
+      document.querySelectorAll(".card").forEach(card => {
+        card.addEventListener("click", (e) => {
+          const id = card.getAttribute("data-id");
+          showDetail(id);
+        });
+      });
+    }
+
+    // 詳細ページ表示
+    function showDetail(id) {
+      const item = placesData.find(p => p.id === id);
+      if (!item) return;
+      selectedItemId = id;
+      currentView = "detail";
+      const t = translations[currentLang];
+      const detailHtml = `
+        <button id="backToHomeBtn" class="back-button">${t.backBtn}</button>
+        <div class="detail-container">
+          <img class="detail-img" src="${item.img}" alt="${getTitle(item)}">
+          <h2 class="detail-title">${getTitle(item)}</h2>
+          <div class="detail-desc">${getDescription(item)}</div>
+          <a href="${item.official}" target="_blank" rel="noopener noreferrer" class="official-link">${t.officialWebsite} ↗</a>
+        </div>
+      `;
+      document.getElementById("appRoot").innerHTML = detailHtml;
+      document.getElementById("backToHomeBtn").addEventListener("click", () => {
+        currentView = "home";
+        renderHome();
+        window.history.pushState({ view: "home" }, "", "#home");
+      });
+      window.history.pushState({ view: "detail", id: id }, "", `#detail-${id}`);
+    }
+
+    // 現在のビューを再描画 (言語/テーマ切替後)
+    function renderCurrentView() {
+      if (currentView === "home") {
+        renderHome();
+      } else if (currentView === "detail" && selectedItemId) {
+        showDetail(selectedItemId);
+      } else {
+        // フォールバック
+        currentView = "home";
+        renderHome();
+      }
+    }
+
+    // ブラウザバック/フォワード対応
+    window.addEventListener("popstate", (event) => {
+      if (event.state && event.state.view === "detail") {
+        currentView = "detail";
+        if (event.state.id) selectedItemId = event.state.id;
+        renderCurrentView();
+      } else {
+        currentView = "home";
+        renderHome();
+      }
+    });
+
+    // 初期化 & ローカル設定読み込み
+    function init() {
+      const savedTheme = localStorage.getItem("bali_theme");
+      if (savedTheme === "light") currentTheme = "light";
+      else currentTheme = "dark";
+      applyTheme();
+
+      const savedLang = localStorage.getItem("bali_lang");
+      if (savedLang && (savedLang === "en" || savedLang === "ja" || savedLang === "id")) {
+        currentLang = savedLang;
+      } else {
+        currentLang = "en";
+      }
+      document.getElementById("languageSwitcher").value = currentLang;
+      document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+      document.getElementById("languageSwitcher").addEventListener("change", (e) => {
+        setLanguage(e.target.value);
+        document.getElementById("languageSwitcher").value = currentLang;
+      });
+
+      currentView = "home";
+      renderHome();
+      // 初期history state
+      window.history.replaceState({ view: "home" }, "", "#home");
+    }
+
+    init();
+  </script>
+</body>
+</html>
